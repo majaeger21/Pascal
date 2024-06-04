@@ -12,6 +12,8 @@ StrC = record
    s : packed array [1..50] of char;
 end;
 
+
+{ Creates Union Type where exp attribute corresponds to type contained within ExprC}
 type
   ExprC = record
     case exp: Integer of
@@ -19,13 +21,14 @@ type
       2: (Str: StrC);
   end;
 
-function GetDataType(U: ExprC): String;
+{ Prints what type ExprC is holding }
+function GetExp(U: ExprC): String;
 begin
-  case U.DataType of
-    1: GetDataType := 'NumC';
-    2: GetDataType := 'StrC';
+  case U.Exp of
+    1: GetExp := 'NumC';
+    2: GetExp := 'StrC';
   else
-    GetDataType := 'Unknown';
+    GetExp := 'Unknown';
   end;
 end;
 
@@ -39,7 +42,7 @@ begin
    n1.n := 20;
    E1.exp := 1;
    E1.Num := n1;
-   writeln('Data type is', GetDataType(E1));
-   writeln('Attempt to print NumC', E1.Num);
+   writeln('Data type is  ', GetExp(E1));
+   writeln('Attempt to print NumC, only val atm', E1.Num.n);
 
 end.
