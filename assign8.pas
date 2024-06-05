@@ -564,11 +564,11 @@ begin
     
     New(truVal);
     truVal^.exp := 2;
-    truVal^.Str.s := 'True';
+    truVal^.Str.s := 'This is True';
 
     New(flsVal);
     flsVal^.exp := 2;
-    flsVal^.Str.s := 'False';
+    flsVal^.Str.s := 'This is False';
 
     New(testIf2);
     testIf2^.exp := 7;
@@ -576,7 +576,7 @@ begin
     testIf2^.Ifs.tru := truVal;
     testIf2^.Ifs.fls := flsVal;
     writeln('-- IfC Test : True --');
-    writeln('Expected: True');
+    writeln('Expected: This is True');
     writeln('Interp Value: ', interp(testIf2).Str.s);
 
     writeln();
@@ -584,7 +584,7 @@ begin
     {test IfC : 3}
     testIf2^.Ifs.bool^.NumEq.left^.Num.n := 8;
     writeln('-- IfC Test : False --');
-    writeln('Expected: False');
+    writeln('Expected: This is False');
     writeln('Interp Value: ', interp(testIf2).Str.s);
 
     writeln();
