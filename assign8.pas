@@ -37,6 +37,11 @@ type
       right : ExprC;
     end;
 
+    NumEqC = record
+      left : ExprC;
+      right : ExprC;
+    end;
+
 { Creates Union Type where exp attribute corresponds to type contained within ExprC}
 ExprCRec = record
     case exp: Integer of
@@ -46,6 +51,8 @@ ExprCRec = record
       4: (Sub: SubC);
       5: (Mult: MultC);
       6: (Divis: DivisC);
+      7: (Ifs: IfC);
+      8: (NumEq: NumEqC);
   end;
   
 type
@@ -57,6 +64,7 @@ type
 StrV = record
    s : String;
 end;
+
 
 {Value Type}
 type
@@ -76,6 +84,8 @@ begin
     4: GetExp := 'SubC';
     5: GetExp := 'MultC';
     6: GetExp := 'DivisC';
+    7: GetExp := 'IfC';
+    8: GetExp := 'NumEqC';
   else
     GetExp := 'Unknown';
   end;
@@ -119,6 +129,22 @@ begin
                 writeln('Error: Division by zero')
             else
                 result.Num.n := interp(U^.Divis.left).Num.n div interp(U^.Divis.right).Num.n;
+        end;
+    7: {IfC Case}
+        begin
+            if interp(U^.Ifs.bool).Num.n = 1 then
+                result := interp(U^.Ifs.tru)
+            else
+                result := interp(U^.Ifs.fls);
+        end;
+    8: {NumEqC Case}
+        begin
+            result.exp := 1; {result is NumV}
+            
+            if interp(U^.NumEq.left).Num.n = interp(U^.NumEq.right).Num.n then
+                result.Num.n := 1
+            else
+                result.Num.n := 0;
         end;
     end;
     interp := result; {return result}
@@ -167,6 +193,10 @@ var
 
     test10: ExprC;
     x10 : DivisC;
+
+    testNumEq: ExprC;
+
+    
 
 begin
     writeln('Tests');
@@ -473,10 +503,39 @@ begin
     Dispose(leftRightExpr);
     Dispose(rightLeftExpr);
     Dispose(rightRightExpr);
-    Dispose(leftExpr);
-    Dispose(rightExpr);
+   
     Dispose(test10);
     writeln();
+
+
+    {test eqC}
+    leftExpr^.exp := 1;
+    leftExpr^.Num.n := 1;
+
+    rightExpr^.exp := 1;
+    rightExpr^.Num.n := 1;
+
+    New(testNumEq);
+    testNumEq^.exp := 8;
+    testNumEq^.NumEq.left := leftExpr;
+    testNumEq^.NumEq.right := rightExpr;
+    writeln('-- NumEqC Test : True --');
+    writeln('Expected: 1');
+    writeln('Interp Value: ', interp(testNumEq).Num.n);
+
+    writeln();
+
+    testNumEq^.NumEq.left^.Num.n := 2;
+    writeln('-- NumEqC Test : False --');
+    writeln('Expected: 0');
+    writeln('Interp Value: ', interp(testNumEq).Num.n);
+
+    writeln();
+
+
+
+    Dispose(leftExpr);
+    Dispose(rightExpr);
 
     writeln('End of Tests');
 end.
