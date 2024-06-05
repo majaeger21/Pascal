@@ -105,7 +105,7 @@ end;
 function interp(U : ExprC) : Val;
 var
     result : Val; {result value that will be returned}
-    
+
 begin
     case U^.exp of
     1: {NumC case}
@@ -531,7 +531,7 @@ begin
     test10^.Divis.left := leftExpr;
     test10^.Divis.right := rightExpr;
     writeln('-- Recursive DivisC Test --');
-    writeln('Expected: 1');
+    writeln('Expected: 4');
     writeln('Interp Value: ', interp(test10).Num.n);
     Dispose(leftLeftExpr);
     Dispose(leftRightExpr);
