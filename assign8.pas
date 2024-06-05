@@ -37,6 +37,7 @@ type
       right : ExprC;
     end;
 
+
     NumEqC = record
       left : ExprC;
       right : ExprC;
@@ -195,6 +196,14 @@ var
     x10 : DivisC;
 
     testNumEq: ExprC;
+
+    testIf: ExprC;
+
+    testNumEq2: ExprC;
+    testIf2: ExprC;
+    truVal: ExprC;
+    flsVal: ExprC;
+    
 
     
 
@@ -508,7 +517,7 @@ begin
     writeln();
 
 
-    {test eqC}
+    {test eqC : 1}
     leftExpr^.exp := 1;
     leftExpr^.Num.n := 1;
 
@@ -525,6 +534,7 @@ begin
 
     writeln();
 
+    {test eqC : 2}
     testNumEq^.NumEq.left^.Num.n := 2;
     writeln('-- NumEqC Test : False --');
     writeln('Expected: 0');
@@ -532,10 +542,64 @@ begin
 
     writeln();
 
+    {test IfC : 1}
+    New(testIf);
+    testIf^.exp := 7;
+    testIf^.Ifs.bool := testNumEq;
+    testIf^.Ifs.tru := leftExpr;
+    testIf^.Ifs.fls := rightExpr;
+    writeln('-- IfC Test : False --');
+    writeln('Expected: 1');
+    writeln('Interp Value: ', interp(testIf).Num.n);
+
+    writeln();
+
+    {test IfC : 2}
+    New(testNumEq2);
+    leftExpr^.Num.n := 7;
+    rightExpr^.Num.n := 7;
+    testNumEq2^.exp := 8;
+    testNumEq2^.NumEq.left := leftExpr;
+    testNumEq2^.NumEq.right := rightExpr;
+    
+    New(truVal);
+    truVal^.exp := 2;
+    truVal^.Str.s := 'True';
+
+    New(flsVal);
+    flsVal^.exp := 2;
+    flsVal^.Str.s := 'False';
+
+    New(testIf2);
+    testIf2^.exp := 7;
+    testIf2^.Ifs.bool := testNumEq2;
+    testIf2^.Ifs.tru := truVal;
+    testIf2^.Ifs.fls := flsVal;
+    writeln('-- IfC Test : True --');
+    writeln('Expected: True');
+    writeln('Interp Value: ', interp(testIf2).Str.s);
+
+    writeln();
+
+    {test IfC : 3}
+    testIf2^.Ifs.bool^.NumEq.left^.Num.n := 8;
+    writeln('-- IfC Test : False --');
+    writeln('Expected: False');
+    writeln('Interp Value: ', interp(testIf2).Str.s);
+
+    writeln();
+
+
 
 
     Dispose(leftExpr);
     Dispose(rightExpr);
+    Dispose(testNumEq);
+    Dispose(testIf);
+    Dispose(testNumEq2);
+    Dispose(truVal);
+    Dispose(flsVal);
+    Dispose(testIf2);
 
     writeln('End of Tests');
 end.
