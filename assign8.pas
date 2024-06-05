@@ -7,7 +7,6 @@ type
        n : integer; 
     end;
     
-    
     StrC = record
        s : String;
     end;
@@ -17,6 +16,7 @@ type
       tru : ExprC;
       fls : ExprC;
     end;
+    
 
 { Creates Union Type where exp attribute corresponds to type contained within ExprC}
 ExprCRec = record
@@ -80,14 +80,45 @@ end;
 
 {regular code for testing}
 var
+{
     E1: ExprC;
     n1: NumC;
     E2: ExprC;
     s2: StrC;
     iftest: IfC;
     E4: ExprC;
+}   
+    test1: ExprC;
+    x1 : NumC;
+    test2 : ExprC;
+    x2 : StrC;
 
 begin
+    writeln('Tests');
+    writeln();
+    
+    New(test1);
+    x1.n := 37;
+    test1^.exp := 1;
+    test1^.Num := x1;
+    writeln('-- NumC Test --');
+    writeln('Expected: 37');
+    writeln('Interp Value: ', interp(test1).Num.n);
+    Dispose(test1);
+    writeln();
+    
+    New(test2);
+    x2.s := 'hello world';
+    test2^.exp := 2;
+    test2^.Str := x2;
+    writeln('-- StrC Test --');
+    writeln('Expected: hello world');
+    writeln('Interp Value: ', interp(test2).Str.s);
+    Dispose(test2);
+    writeln();
+    
+    writeln('End of Tests');
+{
     New(E1);
     New(E2);
     New(E4);
@@ -127,7 +158,10 @@ begin
    writeln('Testing IfC bool ', GetExp(E4^.IfExp.bool), ' ', E4^.IfExp.bool^.Num.n);
    writeln('Testing IfC tru ', GetExp(E4^.IfExp.tru), ' ', E4^.IfExp.tru^.Str.s);
    writeln('Testing IfC fls ', GetExp(E4^.IfExp.fls), ' ', E4^.IfExp.fls^.Str.s);
+
     Dispose(E1);
     Dispose(E2);
     Dispose(E4);
+}
+  
 end.
