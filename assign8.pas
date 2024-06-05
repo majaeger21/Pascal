@@ -1,5 +1,7 @@
 program assign8;
 
+Uses SysUtils;
+
 { Added mutually recursive typing required me to do this pointer business with the ^}
 type
     ExprC = ^ExprCRec; 
@@ -43,6 +45,11 @@ type
       right : ExprC;
     end;
 
+    StrEqC = record
+      left : ExprC;
+      right : ExprC;
+    end;
+
 { Creates Union Type where exp attribute corresponds to type contained within ExprC}
 ExprCRec = record
     case exp: Integer of
@@ -54,6 +61,7 @@ ExprCRec = record
       6: (Divis: DivisC);
       7: (Ifs: IfC);
       8: (NumEq: NumEqC);
+      9: (StrEq: StrEqC);
   end;
   
 type
@@ -87,6 +95,7 @@ begin
     6: GetExp := 'DivisC';
     7: GetExp := 'IfC';
     8: GetExp := 'NumEqC';
+    9: GetExp := 'StrEqC';
   else
     GetExp := 'Unknown';
   end;
@@ -96,6 +105,7 @@ end;
 function interp(U : ExprC) : Val;
 var
     result : Val; {result value that will be returned}
+    
 begin
     case U^.exp of
     1: {NumC case}
@@ -147,6 +157,18 @@ begin
             else
                 result.Num.n := 0;
         end;
+
+    9: {StrEqC Case}
+        begin
+            result.exp := 1; {result is NumV}
+            
+            if CompareStr(interp(U^.StrEq.left).Str.s, interp(U^.StrEq.right).Str.s) = 0 then
+                result.Num.n := 1
+            else
+                result.Num.n := 0;
+        end;
+    else
+        writeln('Error: Unknown Expression Type');
     end;
     interp := result; {return result}
 end;
@@ -203,6 +225,9 @@ var
     testIf2: ExprC;
     truVal: ExprC;
     flsVal: ExprC;
+
+    testStrEq: ExprC;
+
     
 
     
@@ -589,6 +614,28 @@ begin
 
     writeln();
 
+    {test StrEqC : 1}
+    leftExpr^.exp := 2;
+    leftExpr^.Str.s := 'hello';
+    rightExpr^.exp := 2;
+    rightExpr^.Str.s := 'hello';
+    New(testStrEq);
+    testStrEq^.exp := 9;
+    testStrEq^.StrEq.left := leftExpr;
+    testStrEq^.StrEq.right := rightExpr;
+    writeln('-- StrEqC Test : True --');
+    writeln('Expected: 1');
+    writeln('Interp Value: ', interp(testStrEq).Num.n);
+
+
+    writeln();
+
+    {test StrEqC : 2}
+    rightExpr^.Str.s := 'world';
+    writeln('-- StrEqC Test : False --');
+    writeln('Expected: 0');
+    writeln('Interp Value: ', interp(testStrEq).Num.n);
+
 
 
 
@@ -600,6 +647,7 @@ begin
     Dispose(truVal);
     Dispose(flsVal);
     Dispose(testIf2);
+    Dispose(testStrEq);
 
     writeln('End of Tests');
 end.
