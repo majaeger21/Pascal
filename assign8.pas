@@ -12,6 +12,10 @@ type
     StrC = record
        s : String;
     end;
+
+    BoolC = record
+       b : boolean;
+    end;
     
     IfC = record
       bool : ExprC;
@@ -39,7 +43,6 @@ type
       right : ExprC;
     end;
 
-
     NumEqC = record
       left : ExprC;
       right : ExprC;
@@ -55,25 +58,28 @@ ExprCRec = record
     case exp: Integer of
       1: (Num: NumC);
       2: (Str: StrC);
-      3: (Plus: PlusC);
-      4: (Sub: SubC);
-      5: (Mult: MultC);
-      6: (Divis: DivisC);
-      7: (Ifs: IfC);
-      8: (NumEq: NumEqC);
-      9: (StrEq: StrEqC);
+      3: (Bool: BoolC);
+      4: (Plus: PlusC);
+      5: (Sub: SubC);
+      6: (Mult: MultC);
+      7: (Divis: DivisC);
+      8: (Ifs: IfC);
+      9: (NumEq: NumEqC);
+      10: (StrEq: StrEqC);
   end;
-  
-type
-NumV = record
-   n : integer; 
-end;
 
 type
-StrV = record
-   s : String;
-end;
+  NumV = record
+     n : integer; 
+  end;
 
+  StrV = record
+     s : String;
+  end;
+
+  BoolV = record
+     b : boolean;
+  end;
 
 {Value Type}
 type
@@ -81,6 +87,7 @@ type
     case exp: Integer of
       1: (Num: NumV);
       2: (Str: StrV);
+      3: (Bool: BoolV);
   end;
 
 { Prints what type ExprC is holding }
@@ -89,13 +96,14 @@ begin
   case U^.exp of
     1: GetExp := 'NumC';
     2: GetExp := 'StrC';
-    3: GetExp := 'PlusC';
-    4: GetExp := 'SubC';
-    5: GetExp := 'MultC';
-    6: GetExp := 'DivisC';
-    7: GetExp := 'IfC';
-    8: GetExp := 'NumEqC';
-    9: GetExp := 'StrEqC';
+    3: GetExp := 'BoolC';
+    4: GetExp := 'PlusC';
+    5: GetExp := 'SubC';
+    6: GetExp := 'MultC';
+    7: GetExp := 'DivisC';
+    8: GetExp := 'IfC';
+    9: GetExp := 'NumEqC';
+    10: GetExp := 'StrEqC';
   else
     GetExp := 'Unknown';
   end;
@@ -118,22 +126,27 @@ begin
             result.exp := 2; {result is StrV}
             result.Str.s := U^.Str.s; {set value}
         end;
-    3: {PlusC Case}
+    3: {BoolC Case}
+        begin
+            result.exp := 3; {result is BoolV}
+            result.Bool.b := U^.Bool.b; {set value}
+        end;
+    4: {PlusC Case}
         begin
             result.exp := 1; {result is NumV}
             result.Num.n := interp(U^.Plus.left).Num.n + interp(U^.Plus.right).Num.n;
         end;
-    4: {SubC Case}
+    5: {SubC Case}
         begin
             result.exp := 1; {result is NumV}
             result.Num.n := interp(U^.Sub.left).Num.n - interp(U^.Sub.right).Num.n;
         end;
-    5: {MultC Case}
+    6: {MultC Case}
         begin
             result.exp := 1; {result is NumV}
             result.Num.n := interp(U^.Mult.left).Num.n * interp(U^.Mult.right).Num.n;
         end;
-    6: {DivisC Case}
+    7: {DivisC Case}
         begin
             result.exp := 1; {result is NumV}
             if interp(U^.Divis.right).Num.n = 0 then
@@ -141,37 +154,38 @@ begin
             else
                 result.Num.n := interp(U^.Divis.left).Num.n div interp(U^.Divis.right).Num.n;
         end;
-    7: {IfC Case}
+    8: {IfC Case}
         begin
-            if interp(U^.Ifs.bool).Num.n = 1 then
+            if interp(U^.Ifs.bool).Bool.b then
                 result := interp(U^.Ifs.tru)
             else
                 result := interp(U^.Ifs.fls);
         end;
-    8: {NumEqC Case}
+    9: {NumEqC Case}
         begin
-            result.exp := 1; {result is NumV}
+            result.exp := 3; {result is BoolV}
             
             if interp(U^.NumEq.left).Num.n = interp(U^.NumEq.right).Num.n then
-                result.Num.n := 1
+                result.Bool.b := True
             else
-                result.Num.n := 0;
+                result.Bool.b := False;
         end;
-
-    9: {StrEqC Case}
+    10: {StrEqC Case}
         begin
-            result.exp := 1; {result is NumV}
+            result.exp := 3; {result is BoolV}
             
             if CompareStr(interp(U^.StrEq.left).Str.s, interp(U^.StrEq.right).Str.s) = 0 then
-                result.Num.n := 1
+                result.Bool.b := True
             else
-                result.Num.n := 0;
+                result.Bool.b := False;
         end;
     else
         writeln('Error: Unknown Expression Type');
     end;
     interp := result; {return result}
 end;
+
+
 
 {ALL OF THE CODE BELOW IS TESTS}
 var
@@ -180,6 +194,9 @@ var
     
     test2 : ExprC;
     x2 : StrC;
+
+    testBool: ExprC;
+    xBool: BoolC;
     
     test3: ExprC;
     x3 : PlusC;
@@ -228,10 +245,6 @@ var
 
     testStrEq: ExprC;
 
-    
-
-    
-
 begin
     writeln('Tests');
     writeln();
@@ -257,6 +270,28 @@ begin
     writeln('Interp Value: ', interp(test2).Str.s);
     Dispose(test2);
     writeln();
+
+    {BoolC Test: True}
+    New(testBool);
+    xBool.b := True;
+    testBool^.exp := 3;
+    testBool^.Bool := xBool;
+    writeln('-- BoolC Test: True --');
+    writeln('Expected: true');
+    writeln('Interp Value: ', BoolToStr(interp(testBool).Bool.b, True));
+    Dispose(testBool);
+    writeln();
+
+    {BoolC Test: False}
+    New(testBool);
+    xBool.b := False;
+    testBool^.exp := 3;
+    testBool^.Bool := xBool;
+    writeln('-- BoolC Test: False --');
+    writeln('Expected: false');
+    writeln('Interp Value: ', BoolToStr(interp(testBool).Bool.b, True));
+    Dispose(testBool);
+    writeln();
     
     {Simple PlusC Test}
     New(leftExpr);
@@ -272,7 +307,7 @@ begin
     New(test3);
     x3.left := leftExpr;
     x3.right := rightExpr;
-    test3^.exp := 3;
+    test3^.exp := 4;
     test3^.Plus := x3;
     writeln('-- Simple PlusC Test --');
     writeln('Expected: 3');
@@ -304,17 +339,17 @@ begin
     rightRightExpr^.Num := rightRightNum;
 
     New(leftExpr);
-    leftExpr^.exp := 3;
+    leftExpr^.exp := 4;
     leftExpr^.Plus.left := leftLeftExpr;
     leftExpr^.Plus.right := leftRightExpr;
 
     New(rightExpr);
-    rightExpr^.exp := 3;
+    rightExpr^.exp := 4;
     rightExpr^.Plus.left := rightLeftExpr;
     rightExpr^.Plus.right := rightRightExpr;
 
     New(test4);
-    test4^.exp := 3;
+    test4^.exp := 4;
     test4^.Plus.left := leftExpr;
     test4^.Plus.right := rightExpr;
     writeln('-- Recursive PlusC Test --');
@@ -343,7 +378,7 @@ begin
     New(test5);
     x5.left := leftExpr;
     x5.right := rightExpr;
-    test5^.exp := 4;
+    test5^.exp := 5;
     test5^.Sub := x5;
     writeln('-- Simple SubC Test --');
     writeln('Expected: 6');
@@ -375,17 +410,17 @@ begin
     rightRightExpr^.Num := rightRightNum;
 
     New(leftExpr);
-    leftExpr^.exp := 4;
+    leftExpr^.exp := 5;
     leftExpr^.Sub.left := leftLeftExpr;
     leftExpr^.Sub.right := leftRightExpr;
 
     New(rightExpr);
-    rightExpr^.exp := 4;
+    rightExpr^.exp := 5;
     rightExpr^.Sub.left := rightLeftExpr;
     rightExpr^.Sub.right := rightRightExpr;
 
     New(test6);
-    test6^.exp := 4;
+    test6^.exp := 5;
     test6^.Sub.left := leftExpr;
     test6^.Sub.right := rightExpr;
     writeln('-- Recursive SubC Test --');
@@ -414,7 +449,7 @@ begin
     New(test7);
     x7.left := leftExpr;
     x7.right := rightExpr;
-    test7^.exp := 5;
+    test7^.exp := 6;
     test7^.Mult := x7;
     writeln('-- Simple MultC Test --');
     writeln('Expected: 12');
@@ -446,17 +481,17 @@ begin
     rightRightExpr^.Num := rightRightNum;
 
     New(leftExpr);
-    leftExpr^.exp := 5;
+    leftExpr^.exp := 6;
     leftExpr^.Mult.left := leftLeftExpr;
     leftExpr^.Mult.right := leftRightExpr;
 
     New(rightExpr);
-    rightExpr^.exp := 5;
+    rightExpr^.exp := 6;
     rightExpr^.Mult.left := rightLeftExpr;
     rightExpr^.Mult.right := rightRightExpr;
 
     New(test8);
-    test8^.exp := 5;
+    test8^.exp := 6;
     test8^.Mult.left := leftExpr;
     test8^.Mult.right := rightExpr;
     writeln('-- Recursive MultC Test --');
@@ -485,7 +520,7 @@ begin
     New(test9);
     x9.left := leftExpr;
     x9.right := rightExpr;
-    test9^.exp := 6;
+    test9^.exp := 7;
     test9^.Divis := x9;
     writeln('-- Simple DivisC Test --');
     writeln('Expected: 3');
@@ -517,17 +552,17 @@ begin
     rightRightExpr^.Num := rightRightNum;
 
     New(leftExpr);
-    leftExpr^.exp := 6;
+    leftExpr^.exp := 7;
     leftExpr^.Divis.left := leftLeftExpr;
     leftExpr^.Divis.right := leftRightExpr;
 
     New(rightExpr);
-    rightExpr^.exp := 6;
+    rightExpr^.exp := 7;
     rightExpr^.Divis.left := rightLeftExpr;
     rightExpr^.Divis.right := rightRightExpr;
 
     New(test10);
-    test10^.exp := 6;
+    test10^.exp := 7;
     test10^.Divis.left := leftExpr;
     test10^.Divis.right := rightExpr;
     writeln('-- Recursive DivisC Test --');
@@ -541,35 +576,36 @@ begin
     Dispose(test10);
     writeln();
 
-
     {test eqC : 1}
+    New(leftExpr);
     leftExpr^.exp := 1;
     leftExpr^.Num.n := 1;
 
+    New(rightExpr);
     rightExpr^.exp := 1;
     rightExpr^.Num.n := 1;
 
     New(testNumEq);
-    testNumEq^.exp := 8;
+    testNumEq^.exp := 9;
     testNumEq^.NumEq.left := leftExpr;
     testNumEq^.NumEq.right := rightExpr;
     writeln('-- NumEqC Test : True --');
-    writeln('Expected: 1');
-    writeln('Interp Value: ', interp(testNumEq).Num.n);
+    writeln('Expected: true');
+    writeln('Interp Value: ', BoolToStr(interp(testNumEq).Bool.b, True));
 
     writeln();
 
     {test eqC : 2}
     testNumEq^.NumEq.left^.Num.n := 2;
     writeln('-- NumEqC Test : False --');
-    writeln('Expected: 0');
-    writeln('Interp Value: ', interp(testNumEq).Num.n);
+    writeln('Expected: false');
+    writeln('Interp Value: ', BoolToStr(interp(testNumEq).Bool.b, True));
 
     writeln();
 
     {test IfC : 1}
     New(testIf);
-    testIf^.exp := 7;
+    testIf^.exp := 8;
     testIf^.Ifs.bool := testNumEq;
     testIf^.Ifs.tru := leftExpr;
     testIf^.Ifs.fls := rightExpr;
@@ -583,7 +619,7 @@ begin
     New(testNumEq2);
     leftExpr^.Num.n := 7;
     rightExpr^.Num.n := 7;
-    testNumEq2^.exp := 8;
+    testNumEq2^.exp := 9;
     testNumEq2^.NumEq.left := leftExpr;
     testNumEq2^.NumEq.right := rightExpr;
     
@@ -596,7 +632,7 @@ begin
     flsVal^.Str.s := 'This is False';
 
     New(testIf2);
-    testIf2^.exp := 7;
+    testIf2^.exp := 8;
     testIf2^.Ifs.bool := testNumEq2;
     testIf2^.Ifs.tru := truVal;
     testIf2^.Ifs.fls := flsVal;
@@ -620,24 +656,20 @@ begin
     rightExpr^.exp := 2;
     rightExpr^.Str.s := 'hello';
     New(testStrEq);
-    testStrEq^.exp := 9;
+    testStrEq^.exp := 10;
     testStrEq^.StrEq.left := leftExpr;
     testStrEq^.StrEq.right := rightExpr;
     writeln('-- StrEqC Test : True --');
-    writeln('Expected: 1');
-    writeln('Interp Value: ', interp(testStrEq).Num.n);
-
+    writeln('Expected: true');
+    writeln('Interp Value: ', BoolToStr(interp(testStrEq).Bool.b, True));
 
     writeln();
 
     {test StrEqC : 2}
     rightExpr^.Str.s := 'world';
     writeln('-- StrEqC Test : False --');
-    writeln('Expected: 0');
-    writeln('Interp Value: ', interp(testStrEq).Num.n);
-
-
-
+    writeln('Expected: false');
+    writeln('Interp Value: ', BoolToStr(interp(testStrEq).Bool.b, True));
 
     Dispose(leftExpr);
     Dispose(rightExpr);
